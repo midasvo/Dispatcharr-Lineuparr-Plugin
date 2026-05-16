@@ -2006,21 +2006,57 @@ class Plugin:
                         sorted_streams = self._sort_streams_by_quality(matched_stream_objs, prioritize_quality)
 
                         if not dry_run:
-                            try:
-                                # Atomic: delete old + create new in single transaction
-                                with transaction.atomic():
-                                    ChannelStream.objects.filter(channel_id=channel_id).delete()
-                                    for idx, stream in enumerate(sorted_streams):
-                                        ChannelStream.objects.create(
-                                            channel_id=channel_id,
-                                            stream_id=stream['id'],
-                                            order=idx
-                                        )
-                                total_streams_attached += len(sorted_streams)
-                            except Exception as e:
-                                logger.error(f"{LOG_PREFIX} Failed to attach streams to '{ch_name}': {e}")
+                            if preserve:
+                                try:
+                                    existing = list(
+                                        ChannelStream.objects.filter(
+                                            channel_id=channel_id
+                                        ).values_list('stream_id', 'order')
+                                    )
+                                    existing_ids = {sid for sid, _ in existing}
+                                    next_order = max((o for _, o in existing), default=-1) + 1
+                                    new_streams = [
+                                        s for s in sorted_streams
+                                        if s['id'] not in existing_ids
+                                    ]
+                                    with transaction.atomic():
+                                        for idx, stream in enumerate(new_streams):
+                                            ChannelStream.objects.create(
+                                                channel_id=channel_id,
+                                                stream_id=stream['id'],
+                                                order=next_order + idx
+                                            )
+                                    total_streams_attached += len(new_streams)
+                                except Exception as e:
+                                    logger.error(f"{LOG_PREFIX} Failed to append streams to '{ch_name}': {e}")
+                            else:
+                                try:
+                                    # Atomic: delete old + create new in single transaction
+                                    with transaction.atomic():
+                                        ChannelStream.objects.filter(channel_id=channel_id).delete()
+                                        for idx, stream in enumerate(sorted_streams):
+                                            ChannelStream.objects.create(
+                                                channel_id=channel_id,
+                                                stream_id=stream['id'],
+                                                order=idx
+                                            )
+                                    total_streams_attached += len(sorted_streams)
+                                except Exception as e:
+                                    logger.error(f"{LOG_PREFIX} Failed to attach streams to '{ch_name}': {e}")
                         else:
-                            total_streams_attached += len(sorted_streams)
+                            if preserve:
+                                existing_ids = set(
+                                    ChannelStream.objects.filter(
+                                        channel_id=channel_id
+                                    ).values_list('stream_id', flat=True)
+                                )
+                                new_streams = [
+                                    s for s in sorted_streams
+                                    if s['id'] not in existing_ids
+                                ]
+                                total_streams_attached += len(new_streams)
+                            else:
+                                total_streams_attached += len(sorted_streams)
 
                         channels_matched += 1
                         csv_rows.append({
