@@ -1917,6 +1917,8 @@ class Plugin:
         input lineup.
         """
         target = raw_name.strip().casefold()
+        if not target:
+            return {"status": "error", "message": "Channel name must not be empty."}
         src_categories = lineup.get("categories", {})
 
         filtered_categories = {}
@@ -1932,8 +1934,8 @@ class Plugin:
             hints = []
             for entries in src_categories.values():
                 for e in entries:
-                    nm = str(e.get("name", ""))
-                    if target in nm.strip().casefold():
+                    nm = str(e.get("name", "")).strip()
+                    if target in nm.casefold():
                         hints.append(nm)
                         if len(hints) >= 10:
                             break
