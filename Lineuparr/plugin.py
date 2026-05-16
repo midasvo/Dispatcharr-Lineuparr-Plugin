@@ -1908,6 +1908,52 @@ class Plugin:
                 "message": f"Stream match error: {e}"
             })
 
+    def _filter_lineup_to_channel(self, lineup, raw_name, logger):
+        """Return a name-filtered copy of `lineup`.
+
+        Keeps only entries whose channel name equals `raw_name`
+        (trimmed, case-insensitive). On zero matches, returns an error
+        result dict the caller must return verbatim. Never mutates the
+        input lineup.
+        """
+        target = raw_name.strip().casefold()
+        src_categories = lineup.get("categories", {})
+
+        filtered_categories = {}
+        match_count = 0
+        for category, entries in src_categories.items():
+            kept = [e for e in entries
+                    if str(e.get("name", "")).strip().casefold() == target]
+            if kept:
+                filtered_categories[category] = kept
+                match_count += len(kept)
+
+        if match_count == 0:
+            hints = []
+            for entries in src_categories.values():
+                for e in entries:
+                    nm = str(e.get("name", ""))
+                    if target in nm.strip().casefold():
+                        hints.append(nm)
+                        if len(hints) >= 10:
+                            break
+                if len(hints) >= 10:
+                    break
+            msg = f"No lineup channel named '{raw_name}' found."
+            if hints:
+                msg += " Did you mean: " + ", ".join(hints) + "?"
+            logger.warning(f"{LOG_PREFIX} Single-channel filter: {msg}")
+            return {"status": "error", "message": msg}
+
+        logger.info(
+            f"{LOG_PREFIX} Single-channel filter: processing "
+            f"{match_count} entr{'y' if match_count == 1 else 'ies'} "
+            f"named '{raw_name}'"
+        )
+        new_lineup = dict(lineup)
+        new_lineup["categories"] = filtered_categories
+        return new_lineup
+
     def _do_apply_stream_match(self, settings, logger):
         """Core stream matching logic (called from thread)."""
         dry_run = settings.get("dry_run_mode", False)
