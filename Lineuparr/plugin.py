@@ -1316,13 +1316,9 @@ class Plugin:
         try:
             numbering_mode = self._resolve_numbering_mode(settings)
             use_number_boost = (numbering_mode == "lineup")
-            lineup = self._load_lineup(settings, logger)
-            single_name = (settings.get("single_channel_name") or "").strip()
-            if single_name:
-                _filtered = self._filter_lineup_to_channel(lineup, single_name, logger)
-                if isinstance(_filtered, dict) and _filtered.get("status") == "error":
-                    return _filtered
-                lineup = _filtered
+            lineup = self._load_filtered_lineup(settings, logger)
+            if isinstance(lineup, dict) and lineup.get("status") == "error":
+                return lineup
             matcher = self._init_fuzzy_matcher(settings, logger)
             alias_map = self._build_alias_map(settings, logger)
             streams = self._get_all_streams(settings, logger)
@@ -1738,13 +1734,9 @@ class Plugin:
                 build_logo_url,
             )
 
-            lineup = self._load_lineup(settings, logger)
-            single_name = (settings.get("single_channel_name") or "").strip()
-            if single_name:
-                _filtered = self._filter_lineup_to_channel(lineup, single_name, logger)
-                if isinstance(_filtered, dict) and _filtered.get("status") == "error":
-                    return _filtered
-                lineup = _filtered
+            lineup = self._load_filtered_lineup(settings, logger)
+            if isinstance(lineup, dict) and lineup.get("status") == "error":
+                return lineup
             prefix = self._get_group_prefix(settings, lineup)
             lineup_file = settings.get("lineup_file", "")
             cc, _ = self._parse_lineup_filename(lineup_file)
@@ -1968,6 +1960,19 @@ class Plugin:
         new_lineup["categories"] = filtered_categories
         return new_lineup
 
+    def _load_filtered_lineup(self, settings, logger):
+        """Load the lineup, then narrow it to `single_channel_name` if set.
+
+        Returns the (possibly filtered) lineup dict, or the helper's
+        error result dict on no match. Callers must return the result
+        verbatim when it is an error dict (status == "error").
+        """
+        lineup = self._load_lineup(settings, logger)
+        single_name = (settings.get("single_channel_name") or "").strip()
+        if single_name:
+            return self._filter_lineup_to_channel(lineup, single_name, logger)
+        return lineup
+
     def _do_apply_stream_match(self, settings, logger):
         """Core stream matching logic (called from thread)."""
         dry_run = settings.get("dry_run_mode", False)
@@ -1979,13 +1984,9 @@ class Plugin:
             return {"status": "error", "message": "Another operation is in progress. Try again later."}
 
         try:
-            lineup = self._load_lineup(settings, logger)
-            single_name = (settings.get("single_channel_name") or "").strip()
-            if single_name:
-                _filtered = self._filter_lineup_to_channel(lineup, single_name, logger)
-                if isinstance(_filtered, dict) and _filtered.get("status") == "error":
-                    return _filtered
-                lineup = _filtered
+            lineup = self._load_filtered_lineup(settings, logger)
+            if isinstance(lineup, dict) and lineup.get("status") == "error":
+                return lineup
             prefix = self._get_group_prefix(settings, lineup)
             matcher = self._init_fuzzy_matcher(settings, logger)
             alias_map = self._build_alias_map(settings, logger)
@@ -2249,13 +2250,9 @@ class Plugin:
 
         try:
             use_number_boost = (self._resolve_numbering_mode(settings) == "lineup")
-            lineup = self._load_lineup(settings, logger)
-            single_name = (settings.get("single_channel_name") or "").strip()
-            if single_name:
-                _filtered = self._filter_lineup_to_channel(lineup, single_name, logger)
-                if isinstance(_filtered, dict) and _filtered.get("status") == "error":
-                    return _filtered
-                lineup = _filtered
+            lineup = self._load_filtered_lineup(settings, logger)
+            if isinstance(lineup, dict) and lineup.get("status") == "error":
+                return lineup
             prefix = self._get_group_prefix(settings, lineup)
             matcher = self._init_fuzzy_matcher(settings, logger)
             alias_map = self._build_alias_map(settings, logger)
