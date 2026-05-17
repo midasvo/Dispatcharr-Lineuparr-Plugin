@@ -1317,7 +1317,7 @@ class Plugin:
             numbering_mode = self._resolve_numbering_mode(settings)
             use_number_boost = (numbering_mode == "lineup")
             lineup = self._load_filtered_lineup(settings, logger)
-            if isinstance(lineup, dict) and lineup.get("status") == "error":
+            if lineup.get("status") == "error":
                 return lineup
             matcher = self._init_fuzzy_matcher(settings, logger)
             alias_map = self._build_alias_map(settings, logger)
@@ -1735,7 +1735,7 @@ class Plugin:
             )
 
             lineup = self._load_filtered_lineup(settings, logger)
-            if isinstance(lineup, dict) and lineup.get("status") == "error":
+            if lineup.get("status") == "error":
                 return lineup
             prefix = self._get_group_prefix(settings, lineup)
             lineup_file = settings.get("lineup_file", "")
@@ -1913,12 +1913,11 @@ class Plugin:
             })
 
     def _filter_lineup_to_channel(self, lineup, raw_name, logger):
-        """Return a name-filtered copy of `lineup`.
+        """Return a name-filtered copy of `lineup`, or an error result dict.
 
-        Keeps only entries whose channel name equals `raw_name`
-        (trimmed, case-insensitive). On zero matches, returns an error
-        result dict the caller must return verbatim. Never mutates the
-        input lineup.
+        Returns `{"status": "error", ...}` on an empty or unmatched
+        `raw_name`; the caller must return that dict verbatim. Never
+        mutates the input lineup.
         """
         target = raw_name.strip().casefold()
         if not target:
@@ -1951,10 +1950,10 @@ class Plugin:
             logger.warning(f"{LOG_PREFIX} Single-channel filter: {msg}")
             return {"status": "error", "message": msg}
 
+        suffix = "y" if match_count == 1 else "ies"
         logger.info(
             f"{LOG_PREFIX} Single-channel filter: processing "
-            f"{match_count} entr{'y' if match_count == 1 else 'ies'} "
-            f"named '{raw_name}'"
+            f"{match_count} entr{suffix} named '{raw_name}'"
         )
         new_lineup = dict(lineup)
         new_lineup["categories"] = filtered_categories
@@ -1985,7 +1984,7 @@ class Plugin:
 
         try:
             lineup = self._load_filtered_lineup(settings, logger)
-            if isinstance(lineup, dict) and lineup.get("status") == "error":
+            if lineup.get("status") == "error":
                 return lineup
             prefix = self._get_group_prefix(settings, lineup)
             matcher = self._init_fuzzy_matcher(settings, logger)
@@ -2251,7 +2250,7 @@ class Plugin:
         try:
             use_number_boost = (self._resolve_numbering_mode(settings) == "lineup")
             lineup = self._load_filtered_lineup(settings, logger)
-            if isinstance(lineup, dict) and lineup.get("status") == "error":
+            if lineup.get("status") == "error":
                 return lineup
             prefix = self._get_group_prefix(settings, lineup)
             matcher = self._init_fuzzy_matcher(settings, logger)
