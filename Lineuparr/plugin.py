@@ -63,7 +63,7 @@ def _clean_json_text(s):
 
 
 class PluginConfig:
-    PLUGIN_VERSION = "1.26.1421623"
+    PLUGIN_VERSION = "1.26.1421627"
 
     DEFAULT_FUZZY_MATCH_THRESHOLD = 80
     DEFAULT_PRIORITIZE_QUALITY = True
@@ -1437,7 +1437,7 @@ class Plugin:
             return {"status": "error", "message": "An operation is already running. Please wait for it to finish."}
         return {
             "status": "ok",
-            "message": f"Preview started: matching {total_channels} channels against {stream_count} streams. ETA: ~{eta_str}. Check notifications for progress.",
+            "message": f"Preview started: matching {total_channels} channels against {stream_count} streams. ETA: ~{eta_str}. Click 📊 Status to watch progress.",
             "background": True,
         }
 
@@ -1634,7 +1634,7 @@ class Plugin:
             return {"status": "error", "message": "An operation is already running. Please wait for it to finish."}
         return {
             "status": "ok",
-            "message": f"Sync Channels started: {total_channels} channels. ETA: ~{eta_str}. Check notifications for progress.",
+            "message": f"Sync Channels started: {total_channels} channels. ETA: ~{eta_str}. Click 📊 Status to watch progress.",
             "background": True,
         }
 
@@ -1774,7 +1774,7 @@ class Plugin:
             return {"status": "error", "message": "An operation is already running. Please wait for it to finish."}
         return {
             "status": "ok",
-            "message": f"Stream matching started for {total_channels} channels. ETA: ~{eta_str}. Check notifications for progress.",
+            "message": f"Stream matching started for {total_channels} channels. ETA: ~{eta_str}. Click 📊 Status to watch progress.",
             "background": True,
         }
 
@@ -1801,7 +1801,7 @@ class Plugin:
             return {"status": "error", "message": "An operation is already running. Please wait for it to finish."}
         return {
             "status": "ok",
-            "message": f"EPG matching started for {total_channels} channels. ETA: ~{eta_str}. Check notifications for progress.",
+            "message": f"EPG matching started for {total_channels} channels. ETA: ~{eta_str}. Click 📊 Status to watch progress.",
             "background": True,
         }
 
@@ -1828,7 +1828,7 @@ class Plugin:
             return {"status": "error", "message": "An operation is already running. Please wait for it to finish."}
         return {
             "status": "ok",
-            "message": f"Logo assignment started for {total_channels} channels. ETA: ~{eta_str}. Check notifications for progress.",
+            "message": f"Logo assignment started for {total_channels} channels. ETA: ~{eta_str}. Click 📊 Status to watch progress.",
             "background": True,
         }
 
@@ -2664,7 +2664,7 @@ class Plugin:
             return {"status": "error", "message": "An operation is already running. Please wait for it to finish."}
         return {
             "status": "ok",
-            "message": f"Full Sync started: groups, channels, stream matching, EPG matching, and logo assignment.{eta_msg} Check notifications for progress.",
+            "message": f"Full Sync started: groups, channels, stream matching, EPG matching, and logo assignment.{eta_msg} Click 📊 Status to watch progress.",
             "background": True,
         }
 
