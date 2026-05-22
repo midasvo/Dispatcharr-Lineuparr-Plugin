@@ -63,7 +63,7 @@ def _clean_json_text(s):
 
 
 class PluginConfig:
-    PLUGIN_VERSION = "1.26.1421651"
+    PLUGIN_VERSION = "1.26.1421700"
 
     DEFAULT_FUZZY_MATCH_THRESHOLD = 80
     DEFAULT_PRIORITIZE_QUALITY = True
@@ -248,6 +248,10 @@ class Plugin:
         self._stop_event = threading.Event()
         self._lineup_cache = None
         self._lineup_cache_file = None
+        # Set True while a multi-step operation (Full Sync) runs so its
+        # sub-steps don't each fire a channel-list refresh; the parent
+        # operation fires exactly one refresh when it finishes.
+        self._suppress_refresh = False
 
     def _try_start_thread(self, target, args):
         """Atomically check if a thread is running and start a new one.
@@ -1165,6 +1169,8 @@ class Plugin:
         (see apps/channels/api_views.py). count is omitted, so the frontend
         shows "...created multiple channel(s)"; Lineuparr's own completion
         notification carries the exact numbers."""
+        if self._suppress_refresh:
+            return  # a multi-step op (Full Sync) fires one refresh at the end
         try:
             send_websocket_update('updates', 'update', {
                 "type": "channels_created",
@@ -2684,6 +2690,9 @@ class Plugin:
 
     def _do_full_sync(self, settings, logger):
         """Background thread for full sync."""
+        # Sub-steps each call _trigger_frontend_refresh; suppress those so a
+        # Full Sync emits exactly one channel-list refresh, at the end.
+        self._suppress_refresh = True
         try:
             # Full Sync is whole-lineup by contract. Its sub-steps route
             # through the same _do_apply_* methods that honor
@@ -2775,6 +2784,7 @@ class Plugin:
             elapsed = time.time() - sync_start
             elapsed_str = ProgressTracker._format_eta_static(elapsed)
             logger.info(f"{LOG_PREFIX} === FULL SYNC COMPLETE ({elapsed_str}) ===")
+            self._suppress_refresh = False
             self._trigger_frontend_refresh(logger)
             send_websocket_update('updates', 'update', {
                 "type": "plugin", "plugin": "Lineuparr",
@@ -2787,6 +2797,10 @@ class Plugin:
                 "type": "plugin", "plugin": "Lineuparr",
                 "message": f"❌ Full sync error: {e}"
             })
+        finally:
+            # Always clear the flag -- including on early returns (cancel/
+            # abort) and exceptions -- so later operations refresh normally.
+            self._suppress_refresh = False
 
     def _clear_csv_exports(self, settings, logger):
         """Delete all Lineuparr CSV export files."""
