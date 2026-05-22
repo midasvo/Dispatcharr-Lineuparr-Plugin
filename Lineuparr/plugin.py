@@ -63,7 +63,7 @@ def _clean_json_text(s):
 
 
 class PluginConfig:
-    PLUGIN_VERSION = "1.26.1421442"
+    PLUGIN_VERSION = "1.26.1421502"
 
     DEFAULT_FUZZY_MATCH_THRESHOLD = 80
     DEFAULT_PRIORITIZE_QUALITY = True
@@ -316,6 +316,13 @@ class Plugin:
             pass
 
         return [
+            # --- Section: Lineup & Sources ---
+            {
+                "id": "_sec_sources",
+                "type": "info",
+                "label": "Lineup & Sources",
+                "help_text": "Choose the lineup to mirror and where streams and EPG data come from.",
+            },
             {
                 "id": "lineup_file",
                 "label": "Lineup File",
@@ -333,6 +340,14 @@ class Plugin:
                 "help_text": "Which M3U source to match streams from. 'All' uses every available source.",
             },
             {
+                "id": "epg_sources",
+                "label": "EPG Sources for Matching",
+                "type": "select",
+                "default": "_all",
+                "options": epg_source_options,
+                "help_text": "Which EPG source to match against. 'All' uses every source, ordered by the priority configured in Dispatcharr.",
+            },
+            {
                 "id": "channel_profiles",
                 "label": "Channel Profile",
                 "type": "select",
@@ -340,11 +355,19 @@ class Plugin:
                 "options": profile_options,
                 "help_text": "Automatically enable matched channels in this profile after sync.",
             },
+            # --- Section: Channel Groups & Numbering ---
+            {
+                "id": "_sec_groups",
+                "type": "info",
+                "label": "Channel Groups & Numbering",
+                "help_text": "How channels are grouped and numbered when they are created.",
+            },
             {
                 "id": "group_prefix",
                 "label": "Channel Group Prefix",
                 "type": "string",
                 "default": "",
+                "placeholder": "blank = auto  |  none = no prefix  |  e.g. US ",
                 "help_text": "Blank = auto from lineup name. 'none' = no prefix. Add trailing separator to control format (e.g. 'US ' or 'DTV-').",
             },
             {
@@ -361,19 +384,6 @@ class Plugin:
                 "help_text": "Controls how lineup categories are grouped. Refined merges into 6, Simple into 7, Normal keeps all original categories.",
             },
             {
-                "id": "match_sensitivity",
-                "label": "Match Sensitivity",
-                "type": "select",
-                "default": "normal",
-                "options": [
-                    {"value": "relaxed", "label": "Relaxed - more matches, more false positives"},
-                    {"value": "normal", "label": "Normal - balanced"},
-                    {"value": "strict", "label": "Strict - fewer matches, high confidence"},
-                    {"value": "exact", "label": "Exact - near-exact matches only"},
-                ],
-                "help_text": "How closely stream and EPG names must match channel names. Lower = more matches but more errors.",
-            },
-            {
                 "id": "channel_numbering",
                 "label": "Channel Numbering",
                 "type": "select",
@@ -388,21 +398,72 @@ class Plugin:
             },
             {
                 "id": "starting_channel_number",
-                "label": "Starting Channel Number",
+                "label": "Starting Channel Number (Specific mode only)",
                 "type": "string",
                 "default": "",
+                "placeholder": "e.g. 1000",
                 "help_text": "Starting channel number for 'Use Specific Number' mode. Channels are numbered sequentially from this value.",
+            },
+            # --- Section: Stream & EPG Matching ---
+            {
+                "id": "_sec_matching",
+                "type": "info",
+                "label": "Stream & EPG Matching",
+                "help_text": "Controls how streams and EPG entries are matched to lineup channels.",
+            },
+            {
+                "id": "match_sensitivity",
+                "label": "Match Sensitivity",
+                "type": "select",
+                "default": "normal",
+                "options": [
+                    {"value": "relaxed", "label": "Relaxed - more matches, more false positives"},
+                    {"value": "normal", "label": "Normal - balanced"},
+                    {"value": "strict", "label": "Strict - fewer matches, high confidence"},
+                    {"value": "exact", "label": "Exact - near-exact matches only"},
+                ],
+                "help_text": "How closely stream and EPG names must match channel names. Lower = more matches but more errors.",
             },
             {
                 "id": "prioritize_quality",
-                "label": "\u2b50 Order Matched Streams by Quality",
+                "label": "Order Matched Streams by Quality",
                 "type": "boolean",
                 "default": True,
                 "help_text": "Sort attached streams by quality (4K > UHD > FHD > HD > SD). Uses probed resolution if available.",
             },
             {
+                "id": "preserve_existing_streams",
+                "label": "Preserve Existing Streams",
+                "type": "boolean",
+                "default": False,
+                "help_text": "When on, newly matched streams are appended to channels without deleting existing streams, duplicates are skipped, and unmatched channels are not deleted. Use this to add a second M3U source non-destructively.",
+            },
+            {
+                "id": "single_channel_name",
+                "label": "Single Channel Match",
+                "type": "string",
+                "default": "",
+                "placeholder": "e.g. CNN  (blank = whole lineup)",
+                "help_text": "When set, Preview Stream Match, Apply Stream Match, Apply EPG Match, and Assign Logos operate ONLY on the lineup channel(s) whose name equals this value (case-insensitive). Leave blank to process the whole lineup. Full Sync ignores this setting.",
+            },
+            {
+                "id": "custom_aliases",
+                "label": "Custom Channel Aliases (advanced)",
+                "type": "text",
+                "default": "",
+                "placeholder": "{\"Channel Name\": [\"alias 1\", \"alias 2\"]}",
+                "help_text": "JSON object mapping a lineup channel name to extra alias names (a bare string is accepted as a single alias). Leave blank to use built-in aliases only.",
+            },
+            # --- Section: Advanced ---
+            {
+                "id": "_sec_advanced",
+                "type": "info",
+                "label": "Advanced",
+                "help_text": "Performance tuning - most setups can leave this at the default.",
+            },
+            {
                 "id": "rate_limiting",
-                "label": "\u23f3 Rate Limiting",
+                "label": "Rate Limiting",
                 "type": "select",
                 "default": "none",
                 "options": [
@@ -412,21 +473,6 @@ class Plugin:
                     {"value": "high", "label": "High - slowest, gentlest on API"},
                 ],
                 "help_text": "Add delays between API calls during sync. Use if Dispatcharr becomes unresponsive during operations.",
-            },
-            {
-                "id": "custom_aliases",
-                "label": "Custom Channel Aliases (advanced)",
-                "type": "string",
-                "default": "",
-                "help_text": "JSON mapping extra names to lineup channels. Leave blank to use built-in aliases only.",
-            },
-            {
-                "id": "epg_sources",
-                "label": "EPG Sources for Matching",
-                "type": "select",
-                "default": "_all",
-                "options": epg_source_options,
-                "help_text": "Select which EPG source to match against, or 'All' to use every available source.",
             },
         ]
 
