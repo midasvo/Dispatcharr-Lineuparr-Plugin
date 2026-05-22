@@ -147,10 +147,6 @@
         "number": 135
       },
       {
-        "name": "Weather Channel",
-        "number": 136
-      },
-      {
         "name": "WeatherNation",
         "number": 137
       },
@@ -171,10 +167,6 @@
       {
         "name": "All Women's Sports",
         "number": 203
-      },
-      {
-        "name": "Bases Loaded / Buzzer Beater / Goal Line",
-        "number": 204
       },
       {
         "name": "beIN SPORT",
@@ -231,10 +223,6 @@
       {
         "name": "ESPN",
         "number": 218
-      },
-      {
-        "name": "ESPN U",
-        "number": 219
       },
       {
         "name": "ESPN2",
@@ -301,10 +289,6 @@
         "number": 235
       },
       {
-        "name": "MLB Extra Innings",
-        "number": 236
-      },
-      {
         "name": "MLB Network",
         "number": 237
       },
@@ -343,10 +327,6 @@
       {
         "name": "NFL RedZone",
         "number": 246
-      },
-      {
-        "name": "NHL Center Ice",
-        "number": 247
       },
       {
         "name": "NHL Network",
@@ -593,11 +573,6 @@
       {
         "name": "NHL Tampa Bay Lightning",
         "number": 331
-      },
-      {
-        "name": "Regional Sports Networks (market-based)",
-        "number": 332,
-        "notes": "Varies by ZIP code. Hopper receivers only. All other receivers 409-437."
       },
       {
         "name": "SNY",
@@ -958,10 +933,6 @@
         "number": 481
       },
       {
-        "name": "Sundance TV",
-        "number": 482
-      },
-      {
         "name": "SundanceTV",
         "number": 483
       },
@@ -1084,10 +1055,6 @@
         "number": 520
       },
       {
-        "name": "Nick Music",
-        "number": 521
-      },
-      {
         "name": "Nick/Nick at Nite (E)",
         "number": 522
       },
@@ -1164,10 +1131,6 @@
       {
         "name": "Cleo TV",
         "number": 611
-      },
-      {
-        "name": "CleoTV",
-        "number": 612
       },
       {
         "name": "Comet",
@@ -1520,10 +1483,6 @@
       {
         "name": "Comedy TV",
         "number": 809
-      },
-      {
-        "name": "Comedy.TV",
-        "number": 810
       },
       {
         "name": "Cozi TV",
@@ -1892,20 +1851,8 @@
         "number": 1115
       },
       {
-        "name": "The Impact Network",
-        "number": 1116
-      },
-      {
-        "name": "The SonLife Broadcasting Network",
-        "number": 1117
-      },
-      {
         "name": "The Word",
         "number": 1118
-      },
-      {
-        "name": "Three Angels Broadcasting",
-        "number": 1119
       },
       {
         "name": "Three Angels Broadcasting Network",
@@ -1924,10 +1871,6 @@
       {
         "name": "CMT Music",
         "number": 1202
-      },
-      {
-        "name": "DISH Music Channels",
-        "number": 1203
       },
       {
         "name": "FM",
@@ -1964,14 +1907,6 @@
       {
         "name": "NickMusic",
         "number": 1212
-      },
-      {
-        "name": "SiriusXM Music Channels (all other receivers)",
-        "number": 1213
-      },
-      {
-        "name": "SiriusXM Music Channels (Hopper/Wally/Joey)",
-        "number": 1214
       },
       {
         "name": "VH1",
@@ -2016,20 +1951,8 @@
         "number": 1309
       },
       {
-        "name": "QVC2",
-        "number": 1310
-      },
-      {
-        "name": "QVC3",
-        "number": 1311
-      },
-      {
         "name": "Sale",
         "number": 1312
-      },
-      {
-        "name": "Shop LC",
-        "number": 1313
       },
       {
         "name": "ShopLC",
@@ -2082,10 +2005,6 @@
         "number": 1411
       },
       {
-        "name": "Galavision",
-        "number": 1412
-      },
-      {
         "name": "Galavisión",
         "number": 1413
       },
@@ -2126,10 +2045,6 @@
         "number": 1422
       },
       {
-        "name": "UniMas",
-        "number": 1423
-      },
-      {
         "name": "UniMás",
         "number": 1424
       },
@@ -2168,10 +2083,6 @@
         "number": 1501
       },
       {
-        "name": "Cowboy Channel",
-        "number": 1502
-      },
-      {
         "name": "Dog Whisperer",
         "number": 1503
       },
@@ -2206,10 +2117,6 @@
       {
         "name": "MeatEater",
         "number": 1511
-      },
-      {
-        "name": "MotorTrend",
-        "number": 1512
       },
       {
         "name": "MyDestination TV",
