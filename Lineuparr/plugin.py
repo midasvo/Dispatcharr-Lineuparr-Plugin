@@ -19,6 +19,7 @@ from django.db import transaction
 
 from .fuzzy_matcher import FuzzyMatcher
 from .aliases import CHANNEL_ALIASES
+from .progress_status import save_progress_atomic, load_progress, build_status_message
 
 from apps.channels.models import Channel, ChannelGroup, ChannelProfile, ChannelProfileMembership, ChannelStream, Stream
 from apps.m3u.models import M3UAccount
@@ -62,7 +63,7 @@ def _clean_json_text(s):
 
 
 class PluginConfig:
-    PLUGIN_VERSION = "1.26.1421427"
+    PLUGIN_VERSION = "1.26.1421442"
 
     DEFAULT_FUZZY_MATCH_THRESHOLD = 80
     DEFAULT_PRIORITIZE_QUALITY = True
@@ -103,6 +104,7 @@ class PluginConfig:
     DATA_DIR = "/data"
     EXPORTS_DIR = "/data/exports"
     STATE_FILE = "/data/lineuparr_state.json"
+    PROGRESS_FILE = "/data/lineuparr_progress.json"
     OPERATION_LOCK_FILE = "/data/lineuparr_operation.lock"
     OPERATION_LOCK_TIMEOUT_MINUTES = 10
 
@@ -155,6 +157,7 @@ class ProgressTracker:
             "type": "plugin", "plugin": "Lineuparr",
             "message": f"🔄 {action_id}: Starting ({total_items} items)"
         })
+        self._publish("running")
 
     def update(self, items_processed=1):
         self.processed_items += items_processed
@@ -170,8 +173,9 @@ class ProgressTracker:
                 "type": "plugin", "plugin": "Lineuparr",
                 "message": f"🔄 {self.action_id}: {pct:.0f}% ({self.processed_items}/{self.total_items}) - ⏱️ ETA: {eta_str}"
             })
+            self._publish("running")
 
-    def finish(self):
+    def finish(self, summary=None):
         elapsed = time.time() - self.start_time
         eta_str = self._format_eta(elapsed)
         self.logger.info(f"{LOG_PREFIX} [{self.action_id}] Complete: {self.processed_items}/{self.total_items} in {eta_str}")
@@ -179,6 +183,27 @@ class ProgressTracker:
             "type": "plugin", "plugin": "Lineuparr",
             "message": f"✅ {self.action_id}: Complete ({self.processed_items}/{self.total_items}) in {eta_str}"
         })
+        self._publish("done", summary=summary)
+
+    def _publish(self, status, summary=None):
+        """Write the progress state file (best-effort — a write failure is
+        logged but never interrupts the operation)."""
+        record = {
+            "status": status,
+            "action": self.action_id,
+            "current": self.processed_items,
+            "total": self.total_items,
+            "start_time": self.start_time,
+            "updated_at": time.time(),
+        }
+        if status == "done":
+            record["finished_at"] = record["updated_at"]
+            if summary:
+                record["summary"] = summary
+        try:
+            save_progress_atomic(PluginConfig.PROGRESS_FILE, record)
+        except Exception as e:
+            self.logger.warning(f"{LOG_PREFIX} Could not write progress file: {e}")
 
     def _format_eta(self, seconds):
         return ProgressTracker._format_eta_static(seconds)
@@ -412,6 +437,7 @@ class Plugin:
         try:
             action_map = {
                 "validate_settings": self._validate_settings,
+                "plugin_status": self._plugin_status,
                 "scan_lineups": self._scan_lineups,
                 "preview_stream_match": self._preview_stream_match,
                 "full_sync": self._full_sync,
@@ -466,6 +492,14 @@ class Plugin:
         if self._thread and self._thread.is_alive():
             self._thread.join(timeout=5)
         logger.info(f"{LOG_PREFIX} Plugin stopped.")
+
+    def _plugin_status(self, settings, logger):
+        """Report current/last operation status from the progress file, so
+        the user can check progress on demand without reading the logs."""
+        progress = load_progress(PluginConfig.PROGRESS_FILE)
+        message = build_status_message(progress)
+        logger.info(f"{LOG_PREFIX} Status requested: {message.splitlines()[0]}")
+        return {"status": "ok", "message": message}
 
     # ========================================================================
     # HELPERS
@@ -1454,8 +1488,6 @@ class Plugin:
 
                     progress.update()
 
-            progress.finish()
-
             if lineup_cc and matcher.country_filter_drops:
                 logger.info(
                     f"{LOG_PREFIX} Country filter dropped "
@@ -1478,6 +1510,7 @@ class Plugin:
                 f"{unmatched_count} unmatched. "
                 f"Types: {type_breakdown}. CSV exported."
             )
+            progress.finish(summary=msg)
             logger.info(f"{LOG_PREFIX} {msg}")
             send_websocket_update('updates', 'update', {
                 "type": "plugin", "plugin": "Lineuparr",
