@@ -39,20 +39,12 @@ CHANNEL_ALIASES = {
     "ESPNEWS": ["ESPN News", "ESPNEWS", "ESPNews"],
     "ESPNU": ["ESPNU"],
     "FanDuel TV": ["FanDuel TV", "FanDuel", "TVG"],
-    "FanDuel Sports Cincinnati": ["FanDuel TV Extra"],
-    "FanDuel Sports Detroit": ["FanDuel TV Extra"],
-    "FanDuel Sports Florida": ["FanDuel TV Extra"],
-    "FanDuel Sports Midwest": ["FanDuel TV Extra"],
-    "FanDuel Sports North": ["FanDuel TV Extra"],
-    "FanDuel Sports Ohio": ["FanDuel TV Extra"],
-    "FanDuel Sports Oklahoma": ["FanDuel TV Extra"],
-    "FanDuel Sports SoCal": ["FanDuel TV Extra"],
-    "FanDuel Sports South": ["FanDuel TV Extra"],
-    "FanDuel Sports Southeast": ["FanDuel TV Extra"],
-    "FanDuel Sports Southwest": ["FanDuel TV Extra"],
-    "FanDuel Sports Sun": ["FanDuel TV Extra"],
-    "FanDuel Sports West": ["FanDuel TV Extra"],
-    "FanDuel Sports Wisconsin": ["FanDuel TV Extra"],
+    # NOTE: Do NOT alias regional FanDuel Sports feeds (Cincinnati, Detroit,
+    # Florida, Midwest, North, Ohio, Oklahoma, SoCal, South, Southeast,
+    # Southwest, Sun, West, Wisconsin) to "FanDuel TV Extra". That fallback
+    # gave every regional sports channel the same generic FanDuel EPG when
+    # no regional EPG existed — worse than NO MATCH. Regions with a real
+    # regional EPG (e.g. Midwest, Southwest, West) match by direct name.
     "FS1": ["Fox Sports 1", "FS1", "FS 1", "Fox Sport 1"],
     "Fox Sports 1": ["Fox Sports 1", "FS1", "FS 1", "Fox Sport 1"],
     "FS2": ["Fox Sports 2", "FS2", "FS 2", "Fox Sport 2"],
