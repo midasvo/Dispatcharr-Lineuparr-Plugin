@@ -48,7 +48,7 @@ Before installing or using this plugin, it is **highly recommended** that you cr
 | `US_DirecTV-Premier_lineup.json` | DIRECTV Premier | US | ~355 |
 | `US_DISH-Top250_lineup.json` | DISH Top 250 | US | ~230 |
 | `US_Verizon-FIOS_lineup.json` | Verizon FiOS | US | ~205 |
-| `US_Combined_lineup.json` | US Combined (DIRECTV + DISH + Verizon) | US | ~545 |
+| `US_Combined_lineup.json` | US Combined (DIRECTV + DISH + Verizon) | US | ~510 |
 | `UK_Freeview_lineup.json` | Freeview | UK | ~160 |
 | `UK_SkyTV_lineup.json` | Sky TV | UK | ~175 |
 | `UK_SkyTV_ENG_full_lineup.json` | Sky TV (Full LineUp) | UK | ~360 |
