@@ -22,7 +22,8 @@ CHANNEL_ALIASES = {
     "FOX News Channel": ["Fox News", "FNC", "FOX NEWS", "Fox News Channel"],
     "E! Entertainment Television": ["E!", "E Entertainment", "E! Entertainment", "E! Entertainment Television"],
     "FOX Weather": ["Fox Weather"],
-    "HLN": ["HLN", "Headline News"],
+    "HLN": ["HLN", "Headline News", "Headline News Network", "HLN Headline News", "HLN Headline News Network", "CNN HLN", "CNN Headline News"],
+    "HLN Headline News Network": ["HLN", "Headline News", "Headline News Network", "CNN HLN", "CNN Headline News"],
     "MS Now": ["MSNBC", "MSNBC Now", "MS Now"],
     "MSNBC": ["MSNBC", "MS Now", "MSNBC Now"],
     "Newsmax": ["Newsmax", "Newsmax TV"],
@@ -58,7 +59,8 @@ CHANNEL_ALIASES = {
     "NHL Network": ["NHL Network", "NHL Net", "NHLN"],
     "SEC Network": ["SEC Network", "SECN"],
     "Tennis Channel HD": ["Tennis Channel", "Tennis Ch"],
-    "TUDN": ["TUDN", "Univision Deportes"],
+    "TUDN": ["TUDN", "Univision Deportes", "Univision Deportes Network", "UDN"],
+    "Univision Deportes": ["TUDN", "Univision Deportes", "Univision Deportes Network"],
 
     # --- Movies ---
     "Cinemax": ["Cinemax", "Cinemax US"],
@@ -195,6 +197,14 @@ CHANNEL_ALIASES = {
     "Hallmark Movies & Mysteries": ["Hallmark Mystery", "Hallmark Movies & More", "Hallmark Mystery HD"],
     "MotorTrend": ["MotorTrend", "Motor Trend", "Velocity"],
     "Travel Channel": ["Travel Channel", "Travel Ch"],
+
+    # --- Faith (rebrands) ---
+    # Hillsong Channel rebranded to TBN Inspire on 2022-01-01 in the US.
+    "Hillsong Channel": ["Hillsong Channel", "TBN Inspire", "Hillsong", "The Church Channel"],
+
+    # --- Movies (rebrands / discontinued) ---
+    # Showtime Beyond was rebranded SHO×BET on 2020-07-15.
+    "Showtime Beyond": ["Showtime Beyond", "SHO×BET", "SHO BET", "SHOxBET", "Showtime BET", "SHO X BET"],
 
     # --- UK: News ---
     "Al Jazeera English": ["Al Jazeera English", "Al Jazeera English HD", "Al Jazeera HD"],

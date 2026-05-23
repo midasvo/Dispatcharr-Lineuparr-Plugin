@@ -366,7 +366,23 @@ class FuzzyMatcher:
             if not shared:
                 return False
             smaller = min(len(tokens_a), len(tokens_b))
-            return len(shared) > smaller / 2
+            if not len(shared) > smaller / 2:
+                return False
+            # Subset guard: when one side is a strict subset of the other and the
+            # larger side has a distinctive (>=5 char) token the smaller lacks,
+            # the candidate is a more specific channel than the query and the
+            # high fuzzy score is a false positive. Catches e.g.
+            # "In Country Television" {country, television} vs "Country Music
+            # Television" {country, music, television} — "music" distinguishes
+            # them. Short extras like "live"/"two" do not trigger the guard,
+            # preserving legitimate matches like "ABC News" → "ABC News Live".
+            if tokens_a < tokens_b:
+                if any(len(t) >= 5 for t in (tokens_b - tokens_a)):
+                    return False
+            elif tokens_b < tokens_a:
+                if any(len(t) >= 5 for t in (tokens_a - tokens_b)):
+                    return False
+            return True
 
         # Basic mode: at least one long token shared
         tokens_a = {t for t in str_a.split() if t not in common_words and len(t) >= min_token_len}
