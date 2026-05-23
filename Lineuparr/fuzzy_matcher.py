@@ -893,8 +893,22 @@ class FuzzyMatcher:
             if filtered:
                 all_matches = filtered
 
-        # Convert to sorted list
+        # Convert to sorted list. Primary key is score (desc); secondary key is
+        # the overlap between the candidate's ORIGINAL tokens and the lineup
+        # channel's ORIGINAL tokens. The secondary key disambiguates ties caused
+        # by normalize_name collapsing brand-name timezones (e.g. "Comedy TV"
+        # and "Comedy Central" both normalize to "comedy") — without it, the
+        # winner is whichever candidate happened to appear first in the EPG
+        # source list. The original-token overlap correctly prefers
+        # "USA: Comedy TV" over "(US) Comedy Central (S)" when matching
+        # lineup "Comedy TV".
+        lineup_tokens = set(re.findall(r'[a-z0-9]+', (lineup_name or "").lower()))
+
+        def _orig_overlap(candidate_name):
+            cand_tokens = set(re.findall(r'[a-z0-9]+', candidate_name.lower()))
+            return len(lineup_tokens & cand_tokens)
+
         results = [(name, score, mtype) for name, (score, mtype) in all_matches.items()]
-        results.sort(key=lambda x: x[1], reverse=True)
+        results.sort(key=lambda x: (x[1], _orig_overlap(x[0])), reverse=True)
         return results
 
