@@ -139,12 +139,17 @@ _KNOWN_COUNTRY_CODES = {
     # Lower-volume but unambiguous ISO-2 countries also seen as colon-prefixes
     # (JP=Animax/BS, KR=Arirang, CZ/HU=European feeds, PH=GMA/Manila, NZ).
     "JP", "KR", "CZ", "HU", "NZ", "PH",
+    # Singletons confirmed from feed content (VN=Vietnam, PK=92 News/8XM,
+    # SI=Arena Sport, ET=Ethiopia via "ETH: Addis TV"). "MT" is NOT added: in
+    # these feeds it tags theme channels (Cooking/Clubbing 4K), not Malta.
+    "VN", "PK", "SI", "ET",
 }
 
 # ISO-3 or colloquial codes seen in M3U streams → ISO-2.
 _ISO3_TO_ISO2 = {
     "USA": "US", "MEX": "MX", "IRE": "IE", "GER": "DE", "FRA": "FR",
     "ITA": "IT", "ESP": "ES", "NLD": "NL", "BRA": "BR", "IND": "IN",
+    "ETH": "ET",
 }
 
 # (PLUTO <COUNTRY>) full-name variants seen in the M3U.
