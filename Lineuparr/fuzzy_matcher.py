@@ -74,42 +74,30 @@ REGIONAL_PATTERNS = [
     r'\s*\([Aa][Tt][Ll][Aa][Nn][Tt][Ii][Cc]\)\s*',
 ]
 
-# Country tokens for the delimited provider-prefix patterns below: "US: ...",
-# "(US)", "│US│", "... | US". Curated set so a bare delimited word ("(SPORTS)")
-# can't be misread as a country. Keep in sync with detect_stream_country().
+# Country tokens for the delimited provider-prefix patterns below; curated so a
+# bare delimited word ("(SPORTS)") isn't misread as a country. Keep in sync with
+# detect_stream_country().
 _PREFIX_COUNTRY = r'US|USA|UK|CA|AU|FR|DE|ES|IT|NL|BR|MX|IN'
 
-# Delimiter pairs treated as interchangeable wrappers around a tag. The open
-# and close must MATCH, so mismatched forms like "(US]" or "│US)" are NOT
-# accepted (the old single-class regex did accept them). Each entry is an
-# (open, close) regex fragment.
+# (open, close) pairs; open and close must MATCH, so "(US]" / "│US)" are rejected.
 _DELIM_PAIRS = ((r'\(', r'\)'), (r'\[', r'\]'), (r'\|', r'\|'), ('┃', '┃'), ('│', '│'))
 
 
 def _balanced_delim(token):
-    """Regex fragment matching `token` wrapped in a single MATCHED delimiter
-    pair: (token) [token] |token| ┃token┃ │token│. `token` is spliced in as a
-    regex fragment and may contain its own capture group."""
+    """Regex fragment matching `token` wrapped in one MATCHED delimiter pair:
+    (token) [token] |token| ┃token┃ │token│. `token` may contain a capture group."""
     return '(?:' + '|'.join(
         o + r'\s*(?:' + token + r')\s*' + c for o, c in _DELIM_PAIRS
     ) + ')'
 
 
-# Leading bracketed/piped country tag, used by detect_stream_country(). One of
-# the five same-shaped capture groups is populated per match.
+# Leading country tag in a matched delimiter pair; one capture group fires.
 _BRACKETED_CC_RE = re.compile(r'^\s*' + _balanced_delim(r'([A-Za-z]{2,3})'))
 
-# Leading provider/bouquet tag wrapped in box-drawing bars: "┃CANAL+┃ NPO 1",
-# "┃NLZIET┃ NPO 2", "┃CA EN┃ BBC WORLD NEWS". Unlike the 2-3 letter country
-# tags handled above, the inner text is an arbitrary source label, so the
-# country-code patterns don't catch it and the leftover token (CANAL, NLZIET)
-# would poison matching. Box bars (┃ U+2503, │ U+2502) never appear in real
-# channel names, so a leading bar-delimited segment is always strippable.
-# Applied in normalize_name(); detect_stream_country() reads the RAW name, so
-# country detection is unaffected. NOTE: this runs first and therefore also
-# subsumes a *leading* "┃XX┃" country tag that GEOGRAPHIC_PATTERNS /
-# PROVIDER_PREFIX_PATTERNS would otherwise strip -- those remain authoritative
-# for non-leading and bracket/pipe forms.
+# Strip a leading box-bar bouquet/source tag with arbitrary inner text
+# ("┃CANAL+┃ NPO 1" -> "NPO 1"); box bars never occur in real names, so this is
+# always safe and also covers leading "┃XX┃" country tags. detect_stream_country
+# reads the raw name, so detection is unaffected.
 _LEADING_BAR_TAG_RE = re.compile(r'^\s*[┃│]\s*[^┃│]*[┃│]\s*')
 
 GEOGRAPHIC_PATTERNS = [
@@ -439,11 +427,7 @@ class FuzzyMatcher:
 
         original_name = name
 
-        # Strip a leading box-bar bouquet/source tag ("┃CANAL+┃ NPO 1" ->
-        # "NPO 1", "┃NLZIET┃ NPO 2" -> "NPO 2"). These wrap an arbitrary source
-        # label that the country-code prefix patterns below can't match, and the
-        # leftover tag text would otherwise survive as a junk matching token.
-        name = _LEADING_BAR_TAG_RE.sub('', name)
+        name = _LEADING_BAR_TAG_RE.sub('', name)  # leading "┃CANAL+┃" bouquet tag
 
         # Strip IPTV provider prefixes BEFORE hyphen normalization so that
         # "FR - Canal+ FHD" loses its "FR - " while the hyphen is still a
@@ -716,23 +700,13 @@ class FuzzyMatcher:
         return bool(tokens_a & tokens_b)
 
     def process_string_for_matching(self, s):
-        """Normalize for token-sort matching: fold compatibility/accent forms,
-        lowercase, keep alphanumerics of any script, and sort tokens.
-
-        Uses NFKD (not NFD) so compatibility forms collapse onto their ASCII
-        equivalents before matching: fullwidth "ＨＢＯ" -> "hbo", superscript
-        "²" -> "2", ligature "ﬁ" -> "fi", ordinal "º" -> "o". Combining marks
-        are then dropped so accents fold too ("Canalé" -> "canale").
-        char.isalnum() keeps letters/digits of every script (Cyrillic, CJK,
-        Arabic) instead of erasing non-Latin names to empty strings.
-        """
+        """Normalize for token-sort matching: NFKD-fold (so "ＨＢＯ"->"hbo", "²"->"2",
+        "ﬁ"->"fi", accents drop), lowercase, keep alphanumerics of any script
+        (isalnum keeps Cyrillic/CJK/Arabic rather than erasing them), sort tokens."""
         s = unicodedata.normalize('NFKD', s)
         s = ''.join(char for char in s if unicodedata.category(char) != 'Mn')
         s = s.lower()
-        # Split a letter glued to a digit ("hbo2" -> "hbo 2") for any script,
-        # mirroring normalize_name()'s ASCII split now that non-Latin letters
-        # survive the cleaning loop below. [^\W\d_] is "any Unicode letter".
-        s = re.sub(r'([^\W\d_])(\d)', r'\1 \2', s)
+        s = re.sub(r'([^\W\d_])(\d)', r'\1 \2', s)  # split letter-glued digit, any script
         cleaned_s = ""
         for char in s:
             if char.isalnum():

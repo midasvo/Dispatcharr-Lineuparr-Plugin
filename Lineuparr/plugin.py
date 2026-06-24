@@ -2691,11 +2691,10 @@ class Plugin:
             # refresh: matched AND user-selected.
             matched_epg_source_ids = set()
 
-            # Candidate pools to try per channel, in priority order: program-data
-            # entries first, then all entries. Invariant across the whole lineup.
+            # (pool, name->entries, has_program_data) in priority order.
             match_passes = [
-                (unique_epg_names, epg_by_name, True),           # program-data
-                (unique_epg_names_all, epg_by_name_all, False),  # all entries
+                (unique_epg_names, epg_by_name, True),
+                (unique_epg_names_all, epg_by_name_all, False),
             ]
 
             for category, channels in lineup["categories"].items():
@@ -2709,8 +2708,7 @@ class Plugin:
                     continue
 
                 cat_cc = self._resolve_category_country(category, lineup_cc, logger)
-                # Country tiers to try, in priority order. The relaxed (None)
-                # tier runs only when the lineup-country tier finds nothing.
+                # Lineup country first, then relaxed (None) if nothing matched.
                 countries = (cat_cc, None) if cat_cc else (None,)
 
                 for entry in channels:
@@ -2735,18 +2733,9 @@ class Plugin:
                         progress.update()
                         continue
 
-                    # Fuzzy match channel name against EPG names, in priority
-                    # order. For each country tier we try program-data entries
-                    # first, then ALL entries:
-                    #   1. country = cat_cc  (program-data, then all)
-                    #   2. country = None    (program-data, then all)  [relaxed]
-                    # The country-relaxed tier runs ONLY when nothing matched
-                    # under the lineup country, so a channel that has a
-                    # same-country EPG keeps it, while a channel carried
-                    # cross-border (e.g. an NL lineup's ZDF, whose EPG the
-                    # provider tags "┃DE┃") can still attach its foreign-tagged
-                    # EPG instead of getting none. _pick_epg_by_country still
-                    # prefers cat_cc among the winning name's entries.
+                    # Try program-data entries before all entries, and the lineup
+                    # country before relaxing it, so a cross-border channel (e.g.
+                    # an NL lineup's ZDF, tagged "┃DE┃") still gets its foreign EPG.
                     best_epg = None
                     best_score = 0
                     best_method = None
